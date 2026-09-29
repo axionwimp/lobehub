@@ -9,6 +9,7 @@ import {
   INPUT_LOADING_OPERATION_TYPES,
   INTERIM_LOADING_OPERATION_TYPES,
   QUEUE_BLOCKING_OPERATION_TYPES,
+  SEND_NOW_CANCEL_REASON,
 } from '../types';
 
 describe('Operation Selectors', () => {
@@ -979,6 +980,31 @@ describe('Operation Selectors', () => {
       });
 
       expect(operationSelectors.isSteerHandoffPending(context)(result.current)).toBe(true);
+      expect(operationSelectors.isQueueDrainPending(context)(result.current)).toBe(true);
+      expect(operationSelectors.isInputVisiblyLoadingByContext(context)(result.current)).toBe(true);
+    });
+
+    it('should treat a run cancelled by Send now as handing off to the queued message', () => {
+      const { result } = renderHook(() => useChatStore());
+      const context = { agentId: 'agent1', topicId: 'topic1' };
+
+      act(() => {
+        const { operationId } = result.current.startOperation({
+          type: 'execServerAgentRuntime',
+          context,
+          metadata: { startTime: 1000 },
+        });
+        result.current.enqueueMessage(messageMapKey(context), {
+          content: 'follow up',
+          createdAt: 2000,
+          id: 'q1',
+          interruptMode: 'soft',
+        });
+        void result.current.cancelOperation(operationId, SEND_NOW_CANCEL_REASON);
+      });
+
+      expect(operationSelectors.isSteerHandoffPending(context)(result.current)).toBe(true);
+      expect(operationSelectors.isQueueDrainPending(context)(result.current)).toBe(false);
       expect(operationSelectors.isInputVisiblyLoadingByContext(context)(result.current)).toBe(true);
     });
 

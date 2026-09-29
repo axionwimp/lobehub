@@ -15,6 +15,7 @@ import {
   type QueuedFile,
   type QueuedMessage,
   reconstructUploadFilesFromQueue,
+  SEND_NOW_CANCEL_REASON,
 } from '@/store/chat/slices/operation/types';
 import { messageMapKey } from '@/store/chat/utils/messageMapKey';
 import { useFileStore } from '@/store/file';
@@ -211,7 +212,7 @@ const QueueTray = memo(() => {
           const runningOpIds =
             operationSelectors.getRunningQueueBlockingOperationIds(context)(chat);
           const cancellationConfirmed = await Promise.all(
-            runningOpIds.map((id) => chat.cancelOperation(id, 'send_now')),
+            runningOpIds.map((id) => chat.cancelOperation(id, SEND_NOW_CANCEL_REASON)),
           );
           if (cancellationConfirmed.some((confirmed) => !confirmed)) {
             throw new Error('Running agent cancellation was not confirmed');

@@ -738,11 +738,11 @@ export class ConversationLifecycleActionImpl {
         break;
       }
     }
-    const steerHandoffPending =
+    const queueDrainPending =
       !runningQueueBlockingOp &&
       !onlyAddUserMessage &&
-      operationSelectors.isSteerHandoffPending(operationContext)(this.#get());
-    if (runningQueueBlockingOp || steerHandoffPending) {
+      operationSelectors.isQueueDrainPending(operationContext)(this.#get());
+    if (runningQueueBlockingOp || queueDrainPending) {
       // Snapshot file previews so the tray can render thumbnails AND the
       // resumed sendMessage can rebuild audioList/imageList/videoList — by the time
       // we drain, chatUploadFileList has long been cleared.

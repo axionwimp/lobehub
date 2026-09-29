@@ -438,6 +438,8 @@ export interface OperationFilter {
  * - execHeterogeneousAgent: Heterogeneous agent execution (Claude Code CLI, etc.)
  * - execServerAgentRuntime: Server-side agent execution (Group Chat)
  */
+export const SEND_NOW_CANCEL_REASON = 'send_now';
+
 export const AI_RUNTIME_OPERATION_TYPES: OperationType[] = [
   'execAgentRuntime',
   'execHeterogeneousAgent',
