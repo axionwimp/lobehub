@@ -55,6 +55,20 @@ describe('getBuiltinRenderDisplayControl', () => {
     );
   });
 
+  it('opens the shared card for a legacy readLocalFile image read too', () => {
+    const imageRead = {
+      images: [{ mediaType: 'image/png', url: 'https://cdn/a.png' }],
+      path: 'shots/g1.png',
+    };
+
+    expect(getBuiltinRenderDisplayControl('lobe-local-system', 'readLocalFile', imageRead)).toBe(
+      'expand',
+    );
+    expect(getBuiltinRenderDisplayControl('lobe-cloud-sandbox', 'readLocalFile', imageRead)).toBe(
+      'expand',
+    );
+  });
+
   it('leaves a text read on either file-system host undecided', () => {
     // Text is not the payload of the call, so the card must not auto-open on it.
     expect(

@@ -32,6 +32,22 @@ describe('resolveLocalSystemRenderDisplayControl', () => {
     ).toBeUndefined();
   });
 
+  it('opens the card for the legacy readLocalFile alias too', () => {
+    // Older gateways emit `readLocalFile`, and persisted results still carry that
+    // name; `LocalSystemRenders` keeps the alias registered for those historical
+    // messages, so the display control has to answer for both names.
+    expect(resolveLocalSystemRenderDisplayControl('readLocalFile', imageRead)).toBe('expand');
+  });
+
+  it('keeps a legacy-named text read collapsed', () => {
+    expect(
+      resolveLocalSystemRenderDisplayControl('readLocalFile', {
+        content: 'const a = 1;',
+        path: 'a.ts',
+      }),
+    ).toBeUndefined();
+  });
+
   it('only refines readFile, not the other local-system APIs', () => {
     expect(resolveLocalSystemRenderDisplayControl('runCommand', imageRead)).toBeUndefined();
     expect(resolveLocalSystemRenderDisplayControl('grepContent', imageRead)).toBeUndefined();
