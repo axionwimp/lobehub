@@ -759,6 +759,16 @@ export class AgentRuntimeService {
   }
 
   /**
+   * Whether the client that started this operation declared it handles
+   * `member_runtime_end`. An unknown or expired operation reads as `false`, so
+   * a continuation then keeps the verbatim terminal every client understands.
+   */
+  async acceptsMemberRuntimeEnd(operationId: string): Promise<boolean> {
+    const metadata = await this.coordinator.getOperationMetadata(operationId).catch(() => null);
+    return metadata?.acceptsMemberRuntimeEnd === true;
+  }
+
+  /**
    * Record whether the client still holds user messages queued behind a run.
    * Only the run's owner may flag it; an unknown or foreign operation is a
    * no-op, so a caller cannot touch another user's run by guessing its id.
@@ -1071,6 +1081,7 @@ export class AgentRuntimeService {
    */
   async createOperation(params: OperationCreationParams): Promise<OperationCreationResult> {
     const {
+      acceptsMemberRuntimeEnd,
       activeDeviceId,
       activeDeviceScope,
       operationId,
@@ -1349,6 +1360,7 @@ export class AgentRuntimeService {
       const mirrorToOperationId =
         appContext?.orchestrationRole === 'member' ? (parentOperationId ?? undefined) : undefined;
       await this.coordinator.createAgentOperation(operationId, {
+        acceptsMemberRuntimeEnd,
         agentConfig,
         // Persisted so a queue worker that never ran this op's init still
         // applies the owner-configured visitor redaction policy instead of the
@@ -1373,10 +1385,9 @@ export class AgentRuntimeService {
       await this.coordinator.saveAgentState(operationId, initialState as any);
 
       // Register external hooks
-      if (hooks && hooks.length > 0) {
-        hookDispatcher.register(operationId, hooks);
-        hooksRegistered = true;
-
+      hookDispatcher.register(operationId, hooks ?? []);
+      hooksRegistered = hookDispatcher.hasHooks(operationId);
+      if (hooksRegistered) {
         // Persist webhook configs to state metadata for production mode
         const serializedHooks = hookDispatcher.getSerializedHooks(operationId);
         if (serializedHooks && serializedHooks.length > 0) {
@@ -4102,7 +4113,7 @@ export class AgentRuntimeService {
   private async refreshMessagesFromDB(state: AgentState): Promise<AgentState['messages']> {
     const dbMessages = await this.queryMessagesFromDB(state);
 
-    const { flatList } = parse(dbMessages);
+    const { flatList } = parse(dbMessages, undefined, { threadId: state.origin?.threadId });
     return flatList as AgentState['messages'];
   }
 
@@ -4114,7 +4125,7 @@ export class AgentRuntimeService {
    */
   private async resolveLastAssistantMessageFromDB(state: AgentState): Promise<unknown> {
     const dbMessages = await this.queryMessagesFromDB(state);
-    const { flatList } = parse(dbMessages);
+    const { flatList } = parse(dbMessages, undefined, { threadId: state.origin?.threadId });
     const lastAssistant = findLastAssistantMessage(normalizeCompletionMessages(flatList));
     const lastAssistantId = typeof lastAssistant?.id === 'string' ? lastAssistant.id : undefined;
 
@@ -4222,7 +4233,7 @@ export class AgentRuntimeService {
                 fileService!.getFullFileUrl(file.url),
               )
             : messages;
-          const { flatList } = parse(resolved);
+          const { flatList } = parse(resolved, undefined, { threadId: state.origin?.threadId });
           if (flatList.length > 0) state.messages = flatList as AgentState['messages'];
         } catch (error) {
           console.error('[queryStepEntryMessages] Failed to hydrate runtime messages: %O', error);

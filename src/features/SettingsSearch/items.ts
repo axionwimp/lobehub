@@ -146,6 +146,7 @@ export const TAB_SEARCH_EN_KEYWORDS: Partial<Record<SettingsTabs, string[]>> = {
     'account deletion',
     'delete account',
   ],
+  [SettingsTabs.Trash]: ['trash', 'recycle bin', 'deleted', 'restore', 'undelete', 'recover'],
   [SettingsTabs.SystemTools]: [
     'system tools',
     'built-in tools',
@@ -193,6 +194,7 @@ export const TAB_SEARCH_KEYWORDS_KEYS: Partial<Record<SettingsTabs, string>> = {
   [SettingsTabs.Stats]: 'settingsSearch.tabKeywords.stats',
   [SettingsTabs.Storage]: 'settingsSearch.tabKeywords.storage',
   [SettingsTabs.SystemTools]: 'settingsSearch.tabKeywords.systemTools',
+  [SettingsTabs.Trash]: 'settingsSearch.tabKeywords.trash',
   [SettingsTabs.Usage]: 'settingsSearch.tabKeywords.usage',
 };
 
@@ -366,6 +368,13 @@ export const SETTINGS_SEARCH_ITEMS: SettingsSearchItem[] = [
     descKey: 'settingChatAppearance.fontSize.desc',
     keywords: ['font', 'size', 'text'],
     labelKey: 'settingChatAppearance.fontSize.title',
+    tab: SettingsTabs.Appearance,
+  },
+  {
+    anchor: 'appearance-font-antialiasing',
+    descKey: 'settingAppearance.font.antialiasing.desc',
+    keywords: ['font', 'antialiasing', 'smoothing', 'text', 'rendering'],
+    labelKey: 'settingAppearance.font.antialiasing.title',
     tab: SettingsTabs.Appearance,
   },
   // System Tools
