@@ -594,7 +594,7 @@
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "5.0.0"
   },
-  "packageManager": "pnpm@9.15.4",
+  "packageManager": "npm@10.8.2",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
